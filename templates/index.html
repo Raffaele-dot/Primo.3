@@ -9,20 +9,22 @@
 </head>
 <body>
     <div id="map" style="width: 100%; height: 600px;"></div>
-    <button id="loadMore" onclick="loadMoreData()">Load More</button>
     <script>
         var map = L.map('map').setView([48.1486, 17.1077], 10); // Default to Bratislava
-        var currentPage = 1;
-        var perPage = 10;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        function loadMoreData() {
-            fetch(`/data?page=${currentPage}&per_page=${perPage}`)
+        // Marker layer group
+        var markersLayer = L.layerGroup().addTo(map);
+
+        // Fetch and display data on map
+        function fetchDataAndDisplay() {
+            fetch('/data')
                 .then(response => response.json())
                 .then(data => {
+                    markersLayer.clearLayers(); // Clear existing markers
                     data.forEach(item => {
                         if (item.Latitude && item.Longitude) {
                             var popupContent = `
@@ -35,15 +37,23 @@
                                 <b>Price per m²:</b> ${item.Price_mtrsq}<br>
                                 <b>Price:</b> ${item.Price}<br>
                             `;
-                            L.marker([item.Latitude, item.Longitude]).addTo(map).bindPopup(popupContent);
+                            var marker = L.marker([item.Latitude, item.Longitude]).bindPopup(popupContent);
+                            markersLayer.addLayer(marker);
                         }
                     });
-                    currentPage++;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
                 });
         }
 
-        // Initial load
-        loadMoreData();
+        // Initial data load
+        fetchDataAndDisplay();
+
+        // Fetch data when map is zoomed in or out
+        map.on('zoomend', function() {
+            fetchDataAndDisplay();
+        });
     </script>
 </body>
 </html>
