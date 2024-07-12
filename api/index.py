@@ -13,7 +13,3 @@ def serve_data():
     df = pd.read_excel(excel_file)
     data = df.to_dict(orient='records')
     return jsonify(data)
-
-# No need to include the following lines for Vercel deployment
-# if __name__ == '__main__':
-#     app.run(debug=True)
