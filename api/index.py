@@ -9,7 +9,7 @@ def serve_index():
 
 @app.route('/data')
 def serve_data():
-    excel_file = 'api/addresses.xlsx'
+    excel_file = 'addresses.xlsx'
     df = pd.read_excel(excel_file)
     data = df.to_dict(orient='records')
     return jsonify(data)
