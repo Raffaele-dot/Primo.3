@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +23,7 @@ def serve_data():
         
         # Pagination
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
+        per_page = request.args.get('per_page', 100, type=int)
         start = (page - 1) * per_page
         end = start + per_page
         
