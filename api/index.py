@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template
 import pandas as pd
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 
 @app.route('/')
 def serve_index():
@@ -9,11 +9,11 @@ def serve_index():
 
 @app.route('/data')
 def serve_data():
-    excel_file = 'addresses.xlsx'
+    excel_file = 'api/addresses.xlsx'
     df = pd.read_excel(excel_file)
     data = df.to_dict(orient='records')
     return jsonify(data)
 
-# Remove the following lines for Vercel deployment
+# No need to include the following lines for Vercel deployment
 # if __name__ == '__main__':
 #     app.run(debug=True)
