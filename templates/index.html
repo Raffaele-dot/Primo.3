@@ -26,7 +26,7 @@
                 .then(response => response.json())
                 .then(data => {
                     allData = data; // Store all data
-                    displayMarkers(data); // Initial display of markers
+                    displayMarkers(allData); // Initial display of all markers
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
