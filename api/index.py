@@ -18,6 +18,9 @@ def serve_data():
         df = pd.read_excel(excel_file)
         logging.info(f"Excel file read successfully. Data: {df.head()}")
         
+        # Replace NaN values with empty strings
+        df = df.fillna("")
+        
         # Pagination
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
