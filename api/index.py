@@ -62,7 +62,8 @@ def serve_data_within_bounds():
         end = start + per_page
         data = df.iloc[start:end].to_dict(orient='records')
 
-        logging.info(f"Data to be sent: {data[:5]}")  # Log first 5 records for debug
+        # Log first 5 records for debug
+        logging.info(f"Data to be sent: {data[:5]}")
 
         return jsonify(data)
     except Exception as e:
