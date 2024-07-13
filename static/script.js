@@ -43,14 +43,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fetch data within current map bounds
+    function fetchDataWithinBounds() {
+        var bounds = map.getBounds();
+        var northEast = bounds.getNorthEast();
+        var southWest = bounds.getSouthWest();
+        
+        fetch(`/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`)
+            .then(response => response.json())
+            .then(data => {
+                displayMarkers(data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
     // Event listeners for zoom and moveend to update markers
-    map.on('zoomend', () => {
-        fetchDataAndDisplay(currentPage);
-    });
-    map.on('moveend', () => {
-        fetchDataAndDisplay(currentPage);
-    });
+    map.on('zoomend', fetchDataWithinBounds);
+    map.on('moveend', fetchDataWithinBounds);
 
     // Initial data load
-    fetchDataAndDisplay();
+    fetchDataWithinBounds();
 });
