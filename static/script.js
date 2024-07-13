@@ -10,10 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a layer group for markers
     const markersLayer = L.layerGroup().addTo(map);
 
-    function fetchMarkers(bounds) {
+    function fetchMarkers(bounds, filters) {
         const northEast = bounds.getNorthEast();
         const southWest = bounds.getSouthWest();
-        const url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=1&per_page=100`;
+        let url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=1&per_page=100`;
+
+        if (filters) {
+            url += `&filters=${JSON.stringify(filters)}`;
+        }
+
         fetch(url)
             .then(response => response.json())
             .then(data => {
@@ -100,26 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     applyFiltersButton.addEventListener('click', () => {
-        fetchDataWithFilters();
+        fetchMarkers(map.getBounds(), filters);
         filterPopup.style.display = 'none';
     });
 
-    function fetchDataWithFilters() {
-        const bounds = map.getBounds();
-        const northEast = bounds.getNorthEast();
-        const southWest = bounds.getSouthWest();
-        let url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&filters=${JSON.stringify(filters)}`;
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                markersLayer.clearLayers();
-                data.forEach(markerData => {
-                    L.marker([markerData.Latitude, markerData.Longitude])
-                        .bindPopup(markerData.Address) // Customize the popup as needed
-                        .addTo(markersLayer);
-                });
-            })
-            .catch(error => console.error('Error fetching data with filters:', error));
-    }
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = this.parentElement.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
 });
