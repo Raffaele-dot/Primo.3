@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the map
-    const map = L.map('map').setView([48.8566, 2.3522], 12); // Set initial view to a location, for example, Paris
+    // Initialize the map with no specific location to maintain last behavior
+    const map = L.map('map').fitWorld();
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -24,9 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 markersLayer.clearLayers();
                 data.forEach(markerData => {
-                    L.marker([markerData.Latitude, markerData.Longitude])
-                        .bindPopup(markerData.Address) // Customize the popup as needed
-                        .addTo(markersLayer);
+                    if (!isNaN(markerData.Latitude) && !isNaN(markerData.Longitude)) {
+                        L.marker([markerData.Latitude, markerData.Longitude])
+                            .bindPopup(markerData.Address) // Customize the popup as needed
+                            .addTo(markersLayer);
+                    }
                 });
             })
             .catch(error => console.error('Error fetching markers:', error));
@@ -84,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     valueLabel.innerHTML = `<input type="checkbox" value="${value}" checked> ${value}`;
                     valuesDiv.appendChild(valueLabel);
                 });
+
+                document.getElementById('select-all').addEventListener('change', function() {
+                    const checkboxes = valuesDiv.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
             })
             .catch(error => console.error('Error fetching column values:', error));
     }
@@ -107,12 +116,5 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFiltersButton.addEventListener('click', () => {
         fetchMarkers(map.getBounds(), filters);
         filterPopup.style.display = 'none';
-    });
-
-    document.getElementById('select-all').addEventListener('change', function() {
-        const checkboxes = this.parentElement.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
     });
 });
