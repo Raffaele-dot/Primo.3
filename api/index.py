@@ -11,29 +11,6 @@ logging.basicConfig(level=logging.INFO)
 def serve_index():
     return render_template('index.html')
 
-@app.route('/data')
-def serve_data():
-    try:
-        excel_file = 'api/addresses.xlsx'
-        df = pd.read_excel(excel_file)
-        logging.info(f"Excel file read successfully. Data: {df.head()}")
-        
-        # Replace NaN values with empty strings
-        df = df.fillna("")
-        
-        # Pagination
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 100, type=int)
-        start = (page - 1) * per_page
-        end = start + per_page
-        
-        data = df.iloc[start:end].to_dict(orient='records')
-        logging.info(f"Data to be sent: {data}")
-        return jsonify(data)
-    except Exception as e:
-        logging.error(f"Error reading Excel file: {e}")
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/data-within-bounds')
 def serve_data_within_bounds():
     try:
@@ -41,17 +18,17 @@ def serve_data_within_bounds():
         northEastLng = request.args.get('northEastLng', type=float)
         southWestLat = request.args.get('southWestLat', type=float)
         southWestLng = request.args.get('southWestLng', type=float)
-        
+
         excel_file = 'api/addresses.xlsx'
         df = pd.read_excel(excel_file)
         logging.info(f"Excel file read successfully. Data: {df.head()}")
 
         # Replace NaN values with empty strings
         df = df.fillna("")
-        
+
         # Filter data within bounds
         df = df[(df['Latitude'] >= southWestLat) & (df['Latitude'] <= northEastLat) & (df['Longitude'] >= southWestLng) & (df['Longitude'] <= northEastLng)]
-        
+
         data = df.to_dict(orient='records')
         logging.info(f"Filtered data to be sent: {data}")
         return jsonify(data)
