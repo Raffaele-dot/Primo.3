@@ -7,47 +7,39 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <style>
         #map {
-            height: 600px;
+            height: 90vh;
             width: 100%;
         }
         #filter-popup {
+            display: none;
             position: fixed;
             top: 10%;
-            left: 50%;
-            transform: translate(-50%, -10%);
+            left: 10%;
+            width: 80%;
+            height: 80%;
             background-color: white;
             border: 1px solid #ccc;
             padding: 20px;
+            overflow-y: scroll;
             z-index: 1000;
-            display: none;
         }
-        #filter-popup h3 {
-            margin: 10px 0;
-        }
-        #filter-popup input[type="text"] {
-            width: 100%;
-            padding: 5px;
-            margin-bottom: 10px;
-        }
-        #filter-popup div {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        #filter-popup button {
-            margin-top: 10px;
+        #open-filter-popup {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <button id="open-filter-popup" style="margin-top: 10px;">Open Filters</button>
+    <button id="open-filter-popup">Open Filters</button>
     <div id="filter-popup">
         <div id="filter-headers"></div>
         <div id="filter-conditions"></div>
         <button id="apply-filters">Apply Filters</button>
     </div>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="/static/script.js"></script>
+    <script src="static/script.js"></script>
 </body>
 </html>
