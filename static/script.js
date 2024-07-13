@@ -14,10 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
         var bounds = map.getBounds();
         var northEast = bounds.getNorthEast();
         var southWest = bounds.getSouthWest();
+        var url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`;
+        console.log(`Fetching data from: ${url}`);
 
-        fetch(`/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`)
+        fetch(url)
             .then(response => response.json())
             .then(data => {
+                console.log('Data received:', data);
                 updateMarkers(data);
             })
             .catch(error => {
