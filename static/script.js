@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(map);
 
     // Marker layer group
-    var layers = {};
-    var currentLayer = null;
+    var markerCache = {};
+    var markersLayer = L.layerGroup().addTo(map);
 
     // Function to fetch data based on the current map bounds
     function fetchDataWithinBounds(page = 1, per_page = 100) {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('Error fetching data:', data.error);
                     return;
                 }
-                updateMarkers(data);
+                cacheAndDisplayMarkers(data);
 
                 // If there is more data, fetch the next page
                 if (data.length === per_page) {
@@ -37,32 +37,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Function to update markers on the map
-    function updateMarkers(data) {
-        if (currentLayer) {
-            map.removeLayer(currentLayer);
-        }
-
-        currentLayer = L.layerGroup();
-
+    // Function to cache and display markers
+    function cacheAndDisplayMarkers(data) {
         data.forEach(item => {
             if (item.Latitude && item.Longitude) {
-                var popupContent = `
-                    <b>Title:</b> ${item.Title}<br>
-                    <b>URL:</b> <a href="${item.Title_URL}" target="_blank">${item.Title_URL}</a><br>
-                    <b>Rooms (m²):</b> ${item.Rooms_mtrsqrd}<br>
-                    <b>Area (m²):</b> ${item.Mtrsqrd}<br>
-                    <b>Description:</b> ${item.Description}<br>
-                    <b>Neighborhood:</b> ${item.Neighborhood}<br>
-                    <b>Price per m²:</b> ${item.Price_mtrsq}<br>
-                    <b>Price:</b> ${item.Price}<br>
-                `;
-                var marker = L.marker([item.Latitude, item.Longitude]).bindPopup(popupContent);
-                currentLayer.addLayer(marker);
+                var key = `${item.Latitude}-${item.Longitude}`;
+                if (!markerCache[key]) {
+                    var popupContent = `
+                        <b>Title:</b> ${item.Title}<br>
+                        <b>URL:</b> <a href="${item.Title_URL}" target="_blank">${item.Title_URL}</a><br>
+                        <b>Rooms (m²):</b> ${item.Rooms_mtrsqrd}<br>
+                        <b>Area (m²):</b> ${item.Mtrsqrd}<br>
+                        <b>Description:</b> ${item.Description}<br>
+                        <b>Neighborhood:</b> ${item.Neighborhood}<br>
+                        <b>Price per m²:</b> ${item.Price_mtrsq}<br>
+                        <b>Price:</b> ${item.Price}<br>
+                    `;
+                    var marker = L.marker([item.Latitude, item.Longitude]).bindPopup(popupContent);
+                    markerCache[key] = marker;
+                    markersLayer.addLayer(marker);
+                }
             }
         });
-
-        currentLayer.addTo(map);
     }
 
     // Initial data load
