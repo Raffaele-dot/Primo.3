@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
+import json
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
@@ -42,25 +43,23 @@ def serve_data_within_bounds():
 
         excel_file = 'api/addresses.xlsx'
         df = pd.read_excel(excel_file)
-        logging.info(f"Excel file read successfully. Data: {df.head()}")
 
-        # Apply bounds filter
-        filtered_df = df[(df['Latitude'] >= southWestLat) & (df['Latitude'] <= northEastLat) & (df['Longitude'] >= southWestLng) & (df['Longitude'] <= northEastLng)]
+        # Apply filters
+        for column, filter_info in filters.items():
+            if filter_info['search']:
+                df = df[df[column].astype(str).str.contains(filter_info['search'], case=False, na=False)]
+            if filter_info['values']:
+                df = df[df[column].isin(filter_info['values'])]
 
-        # Apply additional filters
-        for column, condition in filters.items():
-            if condition['search']:
-                filtered_df = filtered_df[filtered_df[column].str.contains(condition['search'], case=False, na=False)]
-            if condition['values']:
-                filtered_df = filtered_df[filtered_df[column].isin(condition['values'])]
+        # Apply bounds
+        df = df[(df['Latitude'] <= northEastLat) & (df['Latitude'] >= southWestLat) & (df['Longitude'] <= northEastLng) & (df['Longitude'] >= southWestLng)]
 
-        # Paginate the filtered data
+        # Pagination
         start = (page - 1) * per_page
         end = start + per_page
-        data = filtered_df.iloc[start:end].to_dict(orient='records')
 
-        logging.info(f"Filtered data to be sent: {data[:5]}... (and more)")
-
+        data = df.iloc[start:end].to_dict(orient='records')
+        logging.info(f"Data to be sent: {data}")
         return jsonify(data)
     except Exception as e:
         logging.error(f"Error processing request: {e}")
