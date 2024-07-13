@@ -1,6 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Existing code to initialize the map and markers...
+    // Initialize the map
+    const map = L.map('map').setView([48.8566, 2.3522], 12); // Set initial view to a location, for example, Paris
 
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Create a layer group for markers
+    const markersLayer = L.layerGroup().addTo(map);
+
+    function fetchMarkers(bounds) {
+        const northEast = bounds.getNorthEast();
+        const southWest = bounds.getSouthWest();
+        const url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=1&per_page=100`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                markersLayer.clearLayers();
+                data.forEach(markerData => {
+                    L.marker([markerData.Latitude, markerData.Longitude])
+                        .bindPopup(markerData.Address) // Customize the popup as needed
+                        .addTo(markersLayer);
+                });
+            })
+            .catch(error => console.error('Error fetching markers:', error));
+    }
+
+    // Fetch initial markers
+    fetchMarkers(map.getBounds());
+
+    // Fetch markers on map move end
+    map.on('moveend', () => {
+        fetchMarkers(map.getBounds());
+    });
+
+    // Filter popup logic
     const openFilterPopup = document.getElementById('open-filter-popup');
     const filterPopup = document.getElementById('filter-popup');
     const filterHeaders = document.getElementById('filter-headers');
@@ -48,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching column values:', error));
     }
 
-    function applyColumnFilter(column) {
+    window.applyColumnFilter = function(column) {
         const searchInput = document.getElementById(`search-${column}`);
         const checkboxes = document.querySelectorAll(`#values-${column} input[type="checkbox"]:not(#select-all)`);
         let selectedValues = [];
@@ -62,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             search: searchInput.value,
             values: selectedValues
         };
-    }
+    };
 
     applyFiltersButton.addEventListener('click', () => {
         fetchDataWithFilters();
@@ -79,7 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 markersLayer.clearLayers();
-                cacheAndDisplayMarkers(data);
+                data.forEach(markerData => {
+                    L.marker([markerData.Latitude, markerData.Longitude])
+                        .bindPopup(markerData.Address) // Customize the popup as needed
+                        .addTo(markersLayer);
+                });
             })
             .catch(error => console.error('Error fetching data with filters:', error));
     }
