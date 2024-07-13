@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the map with no specific location to maintain last behavior
-    const map = L.map('map').fitWorld();
+    // Initialize the map with a default location to maintain last behavior
+    const map = L.map('map').setView([48.8566, 2.3522], 12); // Default to Paris
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
