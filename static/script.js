@@ -10,18 +10,27 @@ document.addEventListener('DOMContentLoaded', () => {
     var currentLayer = null;
 
     // Function to fetch data based on the current map bounds
-    function fetchDataWithinBounds() {
+    function fetchDataWithinBounds(page = 1, per_page = 100) {
         var bounds = map.getBounds();
         var northEast = bounds.getNorthEast();
         var southWest = bounds.getSouthWest();
-        var url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`;
+        var url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=${page}&per_page=${per_page}`;
         console.log(`Fetching data from: ${url}`);
 
         fetch(url)
             .then(response => response.json())
             .then(data => {
                 console.log('Data received:', data);
+                if (data.error) {
+                    console.error('Error fetching data:', data.error);
+                    return;
+                }
                 updateMarkers(data);
+
+                // If there is more data, fetch the next page
+                if (data.length === per_page) {
+                    fetchDataWithinBounds(page + 1, per_page);
+                }
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
@@ -60,6 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDataWithinBounds();
 
     // Update markers on zoom or move end
-    map.on('zoomend', fetchDataWithinBounds);
-    map.on('moveend', fetchDataWithinBounds);
+    map.on('zoomend', () => fetchDataWithinBounds());
+    map.on('moveend', () => fetchDataWithinBounds());
 });
