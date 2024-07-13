@@ -57,9 +57,10 @@ def serve_data_within_bounds():
         # Pagination
         start = (page - 1) * per_page
         end = start + per_page
-
         data = df.iloc[start:end].to_dict(orient='records')
-        logging.info(f"Data to be sent: {data}")
+
+        logging.info(f"Data to be sent: {data[:5]}")  # Log first 5 records for debug
+
         return jsonify(data)
     except Exception as e:
         logging.error(f"Error processing request: {e}")
