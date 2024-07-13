@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 markersLayer.clearLayers();
                 data.forEach(markerData => {
-                    if (!isNaN(markerData.Latitude) && !isNaN(markerData.Longitude)) {
+                    if (markerData.Latitude && markerData.Longitude) {
                         L.marker([markerData.Latitude, markerData.Longitude])
                             .bindPopup(markerData.Address) // Customize the popup as needed
                             .addTo(markersLayer);
