@@ -54,6 +54,9 @@ def serve_data_within_bounds():
         # Apply bounds
         df = df[(df['Latitude'] <= northEastLat) & (df['Latitude'] >= southWestLat) & (df['Longitude'] <= northEastLng) & (df['Longitude'] >= southWestLng)]
 
+        # Replace NaN with None
+        df = df.where(pd.notnull(df), None)
+
         # Pagination
         start = (page - 1) * per_page
         end = start + per_page
