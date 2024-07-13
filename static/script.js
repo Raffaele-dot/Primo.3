@@ -6,25 +6,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(map);
 
     // Marker layer group
-    var markersLayer = L.layerGroup().addTo(map);
-    var currentPage = 1;
-    var maxMarkersPerPage = 100; // Adjust this number as needed
+    var layers = {};
+    var currentLayer = null;
 
-    // Fetch data with pagination
-    function fetchDataAndDisplay(page = 1) {
-        fetch(`/data?page=${page}&per_page=${maxMarkersPerPage}`)
+    // Function to fetch data based on the current map bounds
+    function fetchDataWithinBounds() {
+        var bounds = map.getBounds();
+        var northEast = bounds.getNorthEast();
+        var southWest = bounds.getSouthWest();
+
+        fetch(`/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`)
             .then(response => response.json())
             .then(data => {
-                displayMarkers(data);
+                updateMarkers(data);
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
     }
 
-    // Display markers on the map
-    function displayMarkers(data) {
-        markersLayer.clearLayers(); // Clear existing markers
+    // Function to update markers on the map
+    function updateMarkers(data) {
+        if (currentLayer) {
+            map.removeLayer(currentLayer);
+        }
+
+        currentLayer = L.layerGroup();
+
         data.forEach(item => {
             if (item.Latitude && item.Longitude) {
                 var popupContent = `
@@ -38,31 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <b>Price:</b> ${item.Price}<br>
                 `;
                 var marker = L.marker([item.Latitude, item.Longitude]).bindPopup(popupContent);
-                markersLayer.addLayer(marker);
+                currentLayer.addLayer(marker);
             }
         });
-    }
 
-    // Fetch data within current map bounds
-    function fetchDataWithinBounds() {
-        var bounds = map.getBounds();
-        var northEast = bounds.getNorthEast();
-        var southWest = bounds.getSouthWest();
-        
-        fetch(`/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}`)
-            .then(response => response.json())
-            .then(data => {
-                displayMarkers(data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+        currentLayer.addTo(map);
     }
-
-    // Event listeners for zoom and moveend to update markers
-    map.on('zoomend', fetchDataWithinBounds);
-    map.on('moveend', fetchDataWithinBounds);
 
     // Initial data load
     fetchDataWithinBounds();
+
+    // Update markers on zoom or move end
+    map.on('zoomend', fetchDataWithinBounds);
+    map.on('moveend', fetchDataWithinBounds);
 });
