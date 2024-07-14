@@ -135,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply filters button
     document.getElementById('applyFilters').addEventListener('click', () => {
         document.getElementById('filterContainer').style.display = 'none';
-        fetching = true; // Restart fetching with new filters
         markersLayer.clearLayers(); // Clear existing markers
         markerCache = {}; // Clear the cache
+        fetching = true; // Resume fetching with new filters
         fetchDataWithinBounds(); // Fetch data with new filters
     });
 });
