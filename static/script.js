@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cacheAndDisplayMarkers(data) {
+        markersLayer.clearLayers(); // Clear existing markers
+        markerCache = {}; // Clear the cache
+
         data.forEach(item => {
             if (item.Latitude && item.Longitude) {
                 var key = `${item.Latitude}-${item.Longitude}`;
