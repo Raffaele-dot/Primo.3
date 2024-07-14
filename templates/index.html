@@ -3,30 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map</title>
+    <title>Map with Filters</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        #map { height: 90vh; width: 100%; }
-        #filter-popup {
+        #map {
+            width: 100%;
+            height: 90vh;
+        }
+        #filterContainer {
             display: none;
-            position: fixed;
-            top: 50px;
-            left: 50px;
-            width: 300px;
             padding: 20px;
-            background: white;
+            background-color: white;
             border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            position: absolute;
+            top: 10px;
+            left: 10px;
             z-index: 1000;
+        }
+        .filter-column {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <button id="open-filter">Open Filters</button>
-    <div id="filter-popup">
-        <div id="filter-container"></div>
-        <button id="apply-filters">Apply Filters</button>
+    <button id="openFilters">Open Filters</button>
+    <div id="filterContainer">
+        <!-- Filter columns will be appended here dynamically -->
+        <button id="applyFilters">Apply Filters</button>
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="/static/script.js"></script>
