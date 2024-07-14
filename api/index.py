@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
+import json  # Add this line to import the json module
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
