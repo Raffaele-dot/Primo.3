@@ -5,19 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Marker layer group
     var markerCache = {};
     var markersLayer = L.layerGroup().addTo(map);
+    var fetching = true; // Flag to control fetching
+    var currentFilters = {}; // Store current filters
 
-    // Filters
-    var filters = {};
-
-    // Function to fetch data based on the current map bounds
     function fetchDataWithinBounds(page = 1, per_page = 100) {
+        if (!fetching) return; // Stop fetching if the flag is false
+
         var bounds = map.getBounds();
         var northEast = bounds.getNorthEast();
         var southWest = bounds.getSouthWest();
-        var url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=${page}&per_page=${per_page}&filters=${encodeURIComponent(JSON.stringify(filters))}`;
+        var filters = encodeURIComponent(JSON.stringify(currentFilters));
+        var url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=${page}&per_page=${per_page}&filters=${filters}`;
         console.log(`Fetching data from: ${url}`);
 
         fetch(url)
@@ -40,21 +40,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Function to cache and display markers
     function cacheAndDisplayMarkers(data) {
         data.forEach(item => {
             if (item.Latitude && item.Longitude) {
                 var key = `${item.Latitude}-${item.Longitude}`;
                 if (!markerCache[key]) {
                     var popupContent = `
-                        <b>Title:</b> ${item.Title || 'N/A'}<br>
-                        <b>URL:</b> <a href="${item.Title_URL || '#'}" target="_blank">${item.Title_URL || 'N/A'}</a><br>
-                        <b>Apt/house type:</b> ${item['Apt/house type'] || 'N/A'}<br>
-                        <b>Area (m²): ${item.Mtrsqrd || 'N/A'}</b><br>
-                        <b>Description:</b> ${item.Description || 'N/A'}<br>
-                        <b>Neighborhood:</b> ${item.Neighborhood || 'N/A'}<br>
-                        <b>Price per m²:</b> ${item.Price_mtrsq || 'N/A'}<br>
-                        <b>Price:</b> ${item.Price || 'N/A'}<br>
+                        <b>Title:</b> ${item.Title}<br>
+                        <b>URL:</b> <a href="${item.Title_URL}" target="_blank">${item.Title_URL}</a><br>
+                        <b>Apt/house type:</b> ${item['Apt/house type']}<br>
+                        <b>Mtrsqrd:</b> ${item.Mtrsqrd}<br>
+                        <b>Description:</b> ${item.Description}<br>
+                        <b>Neighborhood:</b> ${item.Neighborhood}<br>
+                        <b>Price per m²:</b> ${item.Price_mtrsq}<br>
+                        <b>Price:</b> ${item.Price}<br>
+                        <b>Address:</b> ${item.Address}<br>
                     `;
                     var marker = L.marker([item.Latitude, item.Longitude]).bindPopup(popupContent);
                     markerCache[key] = marker;
@@ -71,78 +71,70 @@ document.addEventListener('DOMContentLoaded', () => {
     map.on('zoomend', () => fetchDataWithinBounds());
     map.on('moveend', () => fetchDataWithinBounds());
 
-    // Filter logic
-    document.getElementById('open-filter').addEventListener('click', () => {
-        fetch('/columns')
-            .then(response => response.json())
-            .then(columns => {
-                var filterPopup = document.getElementById('filter-popup');
-                var filterContainer = document.getElementById('filter-container');
-                filterContainer.innerHTML = '';
+    // Fetch column names for filters
+    fetch('/columns')
+        .then(response => response.json())
+        .then(columns => {
+            const filterContainer = document.getElementById('filterContainer');
+            columns.forEach(column => {
+                const columnDiv = document.createElement('div');
+                columnDiv.classList.add('filter-column');
+                columnDiv.innerHTML = `
+                    <label>${column}</label>
+                    <input type="text" id="search-${column}" placeholder="Search...">
+                    <button id="confirm-${column}">Confirm Selection</button>
+                    <div id="values-${column}" class="filter-values"></div>
+                `;
+                filterContainer.appendChild(columnDiv);
 
-                columns.forEach(column => {
-                    var columnDiv = document.createElement('div');
-                    columnDiv.innerHTML = `<b>${column}</b>`;
-                    columnDiv.addEventListener('click', () => {
-                        fetch(`/column-values?column=${column}`)
-                            .then(response => response.json())
-                            .then(values => {
-                                filterContainer.innerHTML = `<b>${column}</b>`;
-                                var searchInput = document.createElement('input');
-                                searchInput.type = 'text';
-                                searchInput.placeholder = 'Search...';
-                                filterContainer.appendChild(searchInput);
-
-                                var valuesContainer = document.createElement('div');
-                                valuesContainer.style.maxHeight = '200px';
-                                valuesContainer.style.overflowY = 'scroll';
-                                valuesContainer.style.display = 'flex';
-                                valuesContainer.style.flexDirection = 'column';
-                                valuesContainer.style.flexWrap = 'nowrap';
-                                valuesContainer.style.width = '100%';
-                                valuesContainer.style.height = '100px';
-                                valuesContainer.style.border = '1px solid #ccc';
-                                valuesContainer.style.padding = '10px';
-                                valuesContainer.style.boxSizing = 'border-box';
-
-                                values.forEach(value => {
-                                    var valueDiv = document.createElement('div');
-                                    valueDiv.style.display = 'flex';
-                                    valueDiv.style.alignItems = 'center';
-                                    var checkbox = document.createElement('input');
-                                    checkbox.type = 'checkbox';
-                                    checkbox.value = value;
-                                    valueDiv.appendChild(checkbox);
-                                    valueDiv.appendChild(document.createTextNode(value));
-                                    valuesContainer.appendChild(valueDiv);
-                                });
-
-                                var confirmButton = document.createElement('button');
-                                confirmButton.textContent = 'Confirm Selection';
-                                confirmButton.style.display = 'block';
-                                confirmButton.style.marginTop = '10px';
-                                confirmButton.addEventListener('click', () => {
-                                    var selectedValues = Array.from(valuesContainer.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-                                    filters[column] = {
-                                        search: searchInput.value,
-                                        values: selectedValues
-                                    };
-                                    filterContainer.innerHTML = '';
-                                });
-
-                                filterContainer.appendChild(valuesContainer);
-                                filterContainer.appendChild(confirmButton);
-                            });
-                    });
-                    filterContainer.appendChild(columnDiv);
+                // Add event listeners for confirm buttons
+                document.getElementById(`confirm-${column}`).addEventListener('click', () => {
+                    const searchValue = document.getElementById(`search-${column}`).value;
+                    const selectedValues = Array.from(document.querySelectorAll(`#values-${column} input:checked`)).map(input => input.value);
+                    currentFilters[column] = {
+                        search: searchValue,
+                        values: selectedValues
+                    };
+                    // Remove values and search bar from view after confirming selection
+                    document.getElementById(`values-${column}`).innerHTML = '';
+                    document.getElementById(`search-${column}`).value = '';
                 });
 
-                filterPopup.style.display = 'block';
+                // Add event listener for search inputs
+                document.getElementById(`search-${column}`).addEventListener('input', (e) => {
+                    const searchValue = e.target.value;
+                    fetch(`/column-values?column=${column}`)
+                        .then(response => response.json())
+                        .then(values => {
+                            const filteredValues = values.filter(value => value.toString().toLowerCase().includes(searchValue.toLowerCase()));
+                            const valuesDiv = document.getElementById(`values-${column}`);
+                            valuesDiv.innerHTML = `
+                                <div><input type="checkbox" id="select-all-${column}" checked>Select All</div>
+                                ${filteredValues.map(value => `<div><input type="checkbox" value="${value}" checked> ${value}</div>`).join('')}
+                            `;
+                            document.getElementById(`select-all-${column}`).addEventListener('change', (e) => {
+                                const checkboxes = valuesDiv.querySelectorAll('input[type="checkbox"]');
+                                checkboxes.forEach(checkbox => {
+                                    checkbox.checked = e.target.checked;
+                                });
+                            });
+                        });
+                });
             });
+        });
+
+    // Open filters button
+    document.getElementById('openFilters').addEventListener('click', () => {
+        document.getElementById('filterContainer').style.display = 'block';
+        fetching = false; // Stop fetching when filters are opened
     });
 
-    document.getElementById('apply-filters').addEventListener('click', () => {
-        fetchDataWithinBounds();
-        document.getElementById('filter-popup').style.display = 'none';
+    // Apply filters button
+    document.getElementById('applyFilters').addEventListener('click', () => {
+        document.getElementById('filterContainer').style.display = 'none';
+        fetching = true; // Restart fetching with new filters
+        markersLayer.clearLayers(); // Clear existing markers
+        markerCache = {}; // Clear the cache
+        fetchDataWithinBounds(); // Fetch data with new filters
     });
 });
