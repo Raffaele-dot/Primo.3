@@ -56,5 +56,16 @@ def serve_data_within_bounds():
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/columns')
+def serve_columns():
+    try:
+        excel_file = 'api/addresses.xlsx'
+        df = pd.read_excel(excel_file)
+        columns = df.columns.tolist()
+        return jsonify(columns)
+    except Exception as e:
+        logging.error(f"Error fetching columns: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
