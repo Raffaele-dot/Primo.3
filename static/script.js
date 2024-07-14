@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a layer group for markers
     const markersLayer = L.layerGroup().addTo(map);
 
-    function fetchMarkers(bounds, filters) {
+    function fetchMarkers(bounds, filters = {}) {
         const northEast = bounds.getNorthEast();
         const southWest = bounds.getSouthWest();
         let url = `/data-within-bounds?northEastLat=${northEast.lat}&northEastLng=${northEast.lng}&southWestLat=${southWest.lat}&southWestLng=${southWest.lng}&page=1&per_page=100`;
 
-        if (filters) {
+        if (Object.keys(filters).length > 0) {
             url += `&filters=${JSON.stringify(filters)}`;
         }
 
