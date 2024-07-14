@@ -70,5 +70,21 @@ def serve_data_within_bounds():
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/initial-view')
+def initial_view():
+    try:
+        excel_file = 'api/addresses.xlsx'
+        df = pd.read_excel(excel_file)
+        df = df.dropna(subset=['Latitude', 'Longitude'])
+
+        # Find the mean location for initial map view
+        mean_lat = df['Latitude'].mean()
+        mean_lng = df['Longitude'].mean()
+
+        return jsonify({"latitude": mean_lat, "longitude": mean_lng})
+    except Exception as e:
+        logging.error(f"Error processing initial view: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
