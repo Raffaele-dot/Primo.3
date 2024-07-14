@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the map with a default location to maintain last behavior
-    const map = L.map('map').setView([48.8566, 2.3522], 12); // Default to Paris
+    const map = L.map('map').setView([0, 0], 2);
+
+    // Fetch initial view coordinates
+    fetch('/initial-view')
+        .then(response => response.json())
+        .then(data => {
+            map.setView([data.latitude, data.longitude], 12);
+        })
+        .catch(error => console.error('Error fetching initial view:', error));
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -70,10 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function openColumnFilter(column) {
         filterConditions.innerHTML = `<h3>${column}</h3>
             <input type="text" id="search-${column}" placeholder="Search...">
-            <div id="values-${column}">
+            <div id="values-${column}" style="display: flex; flex-direction: column;">
                 <!-- Dynamically populated column values -->
             </div>
-            <button onclick="applyColumnFilter('${column}')">Confirm Selection</button>`;
+            <button onclick="applyColumnFilter('${column}')" style="margin-left: 10px;">Confirm Selection</button>`;
 
         // Fetch unique values for the column
         fetch(`/column-values?column=${column}`)
@@ -111,6 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
             search: searchInput.value,
             values: selectedValues
         };
+
+        // Hide values and search bar after confirming selection
+        filterConditions.innerHTML = '';
     };
 
     applyFiltersButton.addEventListener('click', () => {
