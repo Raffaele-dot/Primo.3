@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
+import json
 import logging
-import json  # Add this line to import the json module
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
@@ -21,9 +21,11 @@ def serve_data_within_bounds():
         southWestLng = request.args.get('southWestLng', type=float)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 100, type=int)
-        filters = request.args.get('filters', default='{}', type=str)
+        filters = request.args.get('filters', default="{}")
 
         logging.info(f"Received bounds: NE({northEastLat}, {northEastLng}), SW({southWestLat}, {southWestLng}), Page: {page}, Per Page: {per_page}, Filters: {filters}")
+
+        filters = json.loads(filters)
 
         excel_file = 'api/addresses.xlsx'
         df = pd.read_excel(excel_file)
@@ -32,17 +34,16 @@ def serve_data_within_bounds():
         # Replace NaN values with empty strings
         df = df.fillna("")
 
-        # Apply filters if any
-        filters = json.loads(filters)
-        for column, filter in filters.items():
-            if 'search' in filter:
-                df = df[df[column].str.contains(filter['search'], case=False, na=False)]
-            if 'values' in filter:
-                df = df[df[column].isin(filter['values'])]
-
         # Filter data within bounds
         filtered_df = df[(df['Latitude'] >= southWestLat) & (df['Latitude'] <= northEastLat) & (df['Longitude'] >= southWestLng) & (df['Longitude'] <= northEastLng)]
-        
+
+        # Apply additional filters
+        for column, filter_data in filters.items():
+            if filter_data['search']:
+                filtered_df = filtered_df[filtered_df[column].astype(str).str.contains(filter_data['search'], case=False, na=False)]
+            if filter_data['values']:
+                filtered_df = filtered_df[filtered_df[column].isin(filter_data['values'])]
+
         # Paginate the filtered data
         start = (page - 1) * per_page
         end = start + per_page
@@ -53,29 +54,6 @@ def serve_data_within_bounds():
         return jsonify(data)
     except Exception as e:
         logging.error(f"Error processing request: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/columns')
-def serve_columns():
-    try:
-        excel_file = 'api/addresses.xlsx'
-        df = pd.read_excel(excel_file)
-        columns = df.columns.tolist()
-        return jsonify(columns)
-    except Exception as e:
-        logging.error(f"Error reading columns from Excel file: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/column-values')
-def serve_column_values():
-    try:
-        column = request.args.get('column')
-        excel_file = 'api/addresses.xlsx'
-        df = pd.read_excel(excel_file)
-        values = df[column].dropna().unique().tolist()
-        return jsonify(values)
-    except Exception as e:
-        logging.error(f"Error reading column values from Excel file: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
