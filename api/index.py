@@ -1,25 +1,16 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
-import os
+import json
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__)
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def serve_index():
-    try:
-        # Log the current working directory and file structure
-        logging.debug(f"Current working directory: {os.getcwd()}")
-        logging.debug(f"Files in template folder: {os.listdir('templates')}")
-        logging.debug(f"Files in static folder: {os.listdir('static')}")
-        
-        return render_template('index.html')
-    except Exception as e:
-        logging.error(f"Error rendering template: {e}")
-        return jsonify({"error": str(e)}), 500
+    return render_template('index.html')
 
 @app.route('/data-within-bounds')
 def serve_data_within_bounds():
