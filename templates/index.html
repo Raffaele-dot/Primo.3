@@ -4,35 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map with Filters</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map {
-            width: 100%;
-            height: 90vh;
-        }
-        #filterContainer {
-            display: none;
-            padding: 20px;
-            background-color: white;
-            border: 1px solid #ccc;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-        }
-        .filter-column {
-            margin-bottom: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="map"></div>
+    <div id="map" style="height: 600px;"></div>
     <button id="openFilters">Open Filters</button>
     <div id="filterContainer">
-        <!-- Filter columns will be appended here dynamically -->
+        <!-- Column filter buttons will be appended here dynamically -->
         <button id="applyFilters">Apply Filters</button>
     </div>
+
+    <!-- Filter pop-up -->
+    <div id="filterPopup" class="filter-popup">
+        <div id="filterContent"></div>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="/static/script.js"></script>
+    <script src="script.js"></script>
+    <script src="filters.js"></script>
 </body>
 </html>
