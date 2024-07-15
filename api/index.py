@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
