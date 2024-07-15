@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
+import os
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,7 @@ def serve_data_within_bounds():
 
         logging.info(f"Received bounds: NE({northEastLat}, {northEastLng}), SW({southWestLat}, {southWestLng}), Page: {page}, Per Page: {per_page}")
 
-        excel_file = 'api/addresses.xlsx'
+        excel_file = os.path.join('api', 'addresses.xlsx')
         df = pd.read_excel(excel_file)
         logging.info(f"Excel file read successfully. Data: {df.head()}")
 
