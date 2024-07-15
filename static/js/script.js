@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     var markersLayer = L.layerGroup().addTo(map);
     var fetching = true;
 
+    // Initialize currentFilters as an empty object
+    var currentFilters = {};
+
     // Function to fetch data based on the current map bounds
     function fetchDataWithinBounds(page = 1, per_page = 100) {
         if (!fetching) return;
@@ -48,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     var popupContent = `
                         <b>Title:</b> ${item.Title}<br>
                         <b>URL:</b> <a href="${item.Title_URL}" target="_blank">${item.Title_URL}</a><br>
-                        <b>Rooms (m²):</b> ${item.Rooms_mtrsqrd}<br>
                         <b>Area (m²):</b> ${item.Mtrsqrd}<br>
                         <b>Description:</b> ${item.Description}<br>
                         <b>Neighborhood:</b> ${item.Neighborhood}<br>
