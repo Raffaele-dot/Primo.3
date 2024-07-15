@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,11 +33,13 @@ def serve_data_within_bounds():
 
         # Apply filters
         filters = json.loads(filters)
-        for column, filter in filters.items():
-            if 'search' in filter and filter['search']:
-                df = df[df[column].astype(str).str.contains(filter['search'], case=False, na=False)]
-            if 'values' in filter and filter['values']:
-                df = df[df[column].isin(filter['values'])]
+        for column, filter_data in filters.items():
+            search_value = filter_data.get('search', '').lower()
+            values = filter_data.get('values', [])
+            if search_value:
+                df = df[df[column].str.lower().str.contains(search_value)]
+            if values:
+                df = df[df[column].isin(values)]
 
         # Filter data within bounds
         filtered_df = df[(df['Latitude'] >= southWestLat) & (df['Latitude'] <= northEastLat) & (df['Longitude'] >= southWestLng) & (df['Longitude'] <= northEastLng)]
