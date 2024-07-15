@@ -2,8 +2,9 @@ from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import logging
 import json
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
