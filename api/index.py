@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 import os
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -13,8 +13,8 @@ def serve_index():
     try:
         # Log the current working directory and file structure
         logging.debug(f"Current working directory: {os.getcwd()}")
-        logging.debug(f"Files in template folder: {os.listdir('../templates')}")
-        logging.debug(f"Files in static folder: {os.listdir('../static')}")
+        logging.debug(f"Files in template folder: {os.listdir('templates')}")
+        logging.debug(f"Files in static folder: {os.listdir('static')}")
         
         return render_template('index.html')
     except Exception as e:
