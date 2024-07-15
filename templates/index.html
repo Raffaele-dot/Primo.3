@@ -3,49 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map with Filters</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="icon" href="/static/favicon.ico">
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-        }
-        #map {
-            height: 80%;
-            width: 100%;
-        }
-        #filterContainer {
-            margin: 10px;
-        }
-        .filter-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 20px;
-            z-index: 1000;
-        }
-    </style>
+    <title>Map Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
     <div id="map"></div>
-    <button id="openFilters">Open Filters</button>
-    <div id="filterContainer">
-        <!-- Column filter buttons will be appended here dynamically -->
-        <button id="applyFilters">Apply Filters</button>
+    <div id="filter">
+        <button id="open-filter">Open Filter</button>
+        <div id="filter-options" style="display: none;">
+            <!-- Add your filter options here -->
+        </div>
     </div>
 
-    <!-- Filter pop-up -->
-    <div id="filterPopup" class="filter-popup">
-        <div id="filterContent"></div>
-    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Initialize map
+        var map = L.map('map').setView([51.505, -0.09], 13);
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="/static/js/script.js"></script>
-    <script src="/static/js/filters.js"></script>
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Load markers
+        function loadMarkers() {
+            $.ajax({
+                url: "/data-within-bounds",
+                data: {
+                    northEastLat: map.getBounds().getNorthEast().lat,
+                    northEastLng: map.getBounds().getNorthEast().lng,
+                    southWestLat: map.getBounds().getSouthWest().lat,
+                    southWestLng: map.getBounds().getSouthWest().lng
+                },
+                success: function(data) {
+                    data.forEach(function(item) {
+                        L.marker([item.Latitude, item.Longitude]).addTo(map)
+                            .bindPopup(item.Address);
+                    });
+                }
+            });
+        }
+
+        map.on('moveend', loadMarkers);
+        loadMarkers();
+
+        // Filter options toggle
+        $("#open-filter").click(function() {
+            $("#filter-options").toggle();
+        });
+    </script>
 </body>
 </html>
