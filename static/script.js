@@ -41,9 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cacheAndDisplayMarkers(data) {
-        markersLayer.clearLayers(); // Clear existing markers
-        markerCache = {}; // Clear the cache
-
         data.forEach(item => {
             if (item.Latitude && item.Longitude) {
                 var key = `${item.Latitude}-${item.Longitude}`;
@@ -80,51 +77,55 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(columns => {
             const filterContainer = document.getElementById('filterContainer');
             columns.forEach(column => {
-                const columnDiv = document.createElement('div');
-                columnDiv.classList.add('filter-column');
-                columnDiv.innerHTML = `
-                    <label>${column}</label>
-                    <input type="text" id="search-${column}" placeholder="Search...">
-                    <button id="confirm-${column}">Confirm Selection</button>
-                    <div id="values-${column}" class="filter-values"></div>
-                `;
-                filterContainer.appendChild(columnDiv);
-
-                // Add event listeners for confirm buttons
-                document.getElementById(`confirm-${column}`).addEventListener('click', () => {
-                    const searchValue = document.getElementById(`search-${column}`).value;
-                    const selectedValues = Array.from(document.querySelectorAll(`#values-${column} input:checked`)).map(input => input.value);
-                    currentFilters[column] = {
-                        search: searchValue,
-                        values: selectedValues
-                    };
-                    // Remove values and search bar from view after confirming selection
-                    document.getElementById(`values-${column}`).innerHTML = '';
-                    document.getElementById(`search-${column}`).value = '';
-                });
-
-                // Add event listener for search inputs
-                document.getElementById(`search-${column}`).addEventListener('input', (e) => {
-                    const searchValue = e.target.value;
-                    fetch(`/column-values?column=${column}`)
-                        .then(response => response.json())
-                        .then(values => {
-                            const filteredValues = values.filter(value => value.toString().toLowerCase().includes(searchValue.toLowerCase()));
-                            const valuesDiv = document.getElementById(`values-${column}`);
-                            valuesDiv.innerHTML = `
-                                <div><input type="checkbox" id="select-all-${column}" checked>Select All</div>
-                                ${filteredValues.map(value => `<div><input type="checkbox" value="${value}" checked> ${value}</div>`).join('')}
-                            `;
-                            document.getElementById(`select-all-${column}`).addEventListener('change', (e) => {
-                                const checkboxes = valuesDiv.querySelectorAll('input[type="checkbox"]');
-                                checkboxes.forEach(checkbox => {
-                                    checkbox.checked = e.target.checked;
-                                });
-                            });
-                        });
-                });
+                const columnButton = document.createElement('button');
+                columnButton.classList.add('filter-button');
+                columnButton.textContent = column;
+                columnButton.addEventListener('click', () => openColumnFilter(column));
+                filterContainer.appendChild(columnButton);
             });
         });
+
+    function openColumnFilter(column) {
+        const filterPopup = document.createElement('div');
+        filterPopup.classList.add('filter-popup');
+        filterPopup.innerHTML = `
+            <h3>${column}</h3>
+            <input type="text" id="search-${column}" placeholder="Search...">
+            <button id="confirm-${column}">Confirm Selection</button>
+            <div id="values-${column}" class="filter-values"></div>
+        `;
+        document.body.appendChild(filterPopup);
+
+        document.getElementById(`confirm-${column}`).addEventListener('click', () => {
+            const searchValue = document.getElementById(`search-${column}`).value;
+            const selectedValues = Array.from(document.querySelectorAll(`#values-${column} input:checked`)).map(input => input.value);
+            currentFilters[column] = {
+                search: searchValue,
+                values: selectedValues
+            };
+            document.body.removeChild(filterPopup);
+        });
+
+        document.getElementById(`search-${column}`).addEventListener('input', (e) => {
+            const searchValue = e.target.value;
+            fetch(`/column-values?column=${column}`)
+                .then(response => response.json())
+                .then(values => {
+                    const filteredValues = values.filter(value => value.toString().toLowerCase().includes(searchValue.toLowerCase()));
+                    const valuesDiv = document.getElementById(`values-${column}`);
+                    valuesDiv.innerHTML = `
+                        <div><input type="checkbox" id="select-all-${column}" checked>Select All</div>
+                        ${filteredValues.map(value => `<div><input type="checkbox" value="${value}" checked> ${value}</div>`).join('')}
+                    `;
+                    document.getElementById(`select-all-${column}`).addEventListener('change', (e) => {
+                        const checkboxes = valuesDiv.querySelectorAll('input[type="checkbox"]');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = e.target.checked;
+                        });
+                    });
+                });
+        });
+    }
 
     // Open filters button
     document.getElementById('openFilters').addEventListener('click', () => {
