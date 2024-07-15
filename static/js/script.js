@@ -2,13 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     var map = L.map('map').setView([48.1486, 17.1077], 10); // Default to Bratislava
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
     }).addTo(map);
 
     // Custom marker icon paths
     var customIcon = L.icon({
         iconUrl: '/static/images/marker-icon.png',
-        shadowUrl: '/static/images/marker-shadow.png'
+        shadowUrl: '/static/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
     });
 
     // Marker layer group
