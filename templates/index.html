@@ -6,9 +6,33 @@
     <title>Map with Filters</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="icon" href="/static/favicon.ico">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            height: 80%;
+            width: 100%;
+        }
+        #filterContainer {
+            margin: 10px;
+        }
+        .filter-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 1000;
+        }
+    </style>
 </head>
 <body>
-    <div id="map" style="height: 600px;"></div>
+    <div id="map"></div>
     <button id="openFilters">Open Filters</button>
     <div id="filterContainer">
         <!-- Column filter buttons will be appended here dynamically -->
